@@ -1,4 +1,3 @@
-
 -- ============================================================
 -- OLA BENGALURU — PRODUCT ANALYTICS
 -- SQL Analysis — All 12 Queries
