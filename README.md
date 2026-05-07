@@ -172,7 +172,7 @@ ola-bengaluru-product-analytics/
 
 ## 🔗 Data Source
 
-Dataset: [Ola Bengaluru Rides — Kaggle](https://www.kaggle.com)
+Dataset: [Ola Bengaluru Rides — Kaggle](https://www.kaggle.com/datasets/muhammadahmadmujahid/ola-dataset)
 
 ---
 
