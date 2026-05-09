@@ -148,6 +148,8 @@ illustrative only.
 ---
 
 ## 📁 Repository Structure
+## 📁 Repository Structure
+
 ```
 ola-bengaluru-product-analytics/
 │
@@ -160,7 +162,11 @@ ola-bengaluru-product-analytics/
 │   ├── 01_data_profiling.py
 │   └── 02_powerbi_export.py
 ├── dashboard/
-│   └── dashboard_preview.png
+│   ├── page1_executive_overview.png
+│   ├── page2_cancellation_analysis.png
+│   ├── page3_revenue_leakage.png
+│   ├── page4_retention_recommendations.png
+│   └── ola_dashboard.pbix
 └── docs/
     └── cleaning_decisions.md
 ```
