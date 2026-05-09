@@ -180,7 +180,58 @@ ola-bengaluru-product-analytics/
 
 > 📥 Download Interactive Dashboard: [ola_dashboard.pbix](dashboard/ola_dashboard.pbix)
 ---
+---
 
+## ⚠️ Project Limitations
+
+1. **Synthetic Dataset** — Data is artificially generated.
+   Real Ola operational data is proprietary and unavailable publicly.
+
+2. **Single Month** — Analysis covers January 2024 only.
+   Seasonal patterns and long term trends cannot be assessed.
+
+3. **Anonymised Locations** — Pickup and drop locations coded
+   as Area-1 to Area-50. Real Bengaluru area names unavailable,
+   limiting geographic storytelling.
+
+4. **No Driver ID** — Individual driver behaviour cannot be tracked.
+   Driver level analysis is not possible with this dataset.
+
+5. **Unreliable Reason Data** — Cancellation and incomplete ride
+   reasons are dropdown selections producing uniform distributions.
+   These columns are flagged and excluded from causal analysis.
+
+---
+
+## 🚀 How to Reproduce This Analysis
+
+### Prerequisites
+- MySQL Workbench 8.0+
+- Python 3.8+ with pandas, seaborn, matplotlib installed
+- Power BI Desktop latest version
+
+### Step 1 — Database Setup
+Open MySQL Workbench and run:
+```sql
+CREATE DATABASE ola_bengaluru;
+USE ola_bengaluru;
+```
+Then create the table and load Bengaluru_Ola.csv using LOAD DATA INFILE
+
+### Step 2 — Run SQL Analysis
+Open sql/ola_analysis.sql in MySQL Workbench and run all 12 queries sequentially
+
+### Step 3 — Run Python Scripts
+Run in this exact order:
+python python/01_data_profiling.py
+python python/02_powerbi_export.py
+This generates ola_powerbi_ready.csv and both heatmap images
+
+### Step 4 — Open Power BI Dashboard
+Open dashboard/ola_dashboard.pbix in Power BI Desktop
+If visuals do not load go to Home → Transform Data → Data Source Settings → update CSV file path to your local path
+
+---
 ## 🔗 Data Source
 
 Dataset: [Ola Bengaluru Rides — Kaggle](https://www.kaggle.com/datasets/muhammadahmadmujahid/ola-dataset)
