@@ -166,8 +166,19 @@ ola-bengaluru-product-analytics/
 
 ## 📈 Dashboard Preview
 
-![Dashboard Preview](dashboard/dashboard_preview.png)
+### Page 1 — Executive Overview
+![Executive Overview](dashboard/page1_executive_overview.png)
 
+### Page 2 — Cancellation Deep Dive
+![Cancellation Analysis](dashboard/page2_cancellation_analysis.png)
+
+### Page 3 — Revenue Leakage
+![Revenue Leakage](dashboard/page3_revenue_leakage.png)
+
+### Page 4 — Retention & Recommendations
+![Retention](dashboard/page4_retention_recommendations.png)
+
+> 📥 Download Interactive Dashboard: [ola_dashboard.pbix](dashboard/ola_dashboard.pbix)
 ---
 
 ## 🔗 Data Source
