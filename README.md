@@ -148,6 +148,7 @@ illustrative only.
 ---
 
 ## 📁 Repository Structure
+```
 ola-bengaluru-product-analytics/
 │
 ├── README.md
@@ -161,8 +162,8 @@ ola-bengaluru-product-analytics/
 ├── dashboard/
 │   └── dashboard_preview.png
 └── docs/
-└── cleaning_decisions.md
----
+    └── cleaning_decisions.md
+```
 
 ## 📈 Dashboard Preview
 
