@@ -223,8 +223,11 @@ Open sql/ola_analysis.sql in MySQL Workbench and run all 12 queries sequentially
 
 ### Step 3 — Run Python Scripts
 Run in this exact order:
+
 python python/01_data_profiling.py
+
 python python/02_powerbi_export.py
+
 This generates ola_powerbi_ready.csv and both heatmap images
 
 ### Step 4 — Open Power BI Dashboard
