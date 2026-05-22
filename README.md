@@ -148,7 +148,6 @@ illustrative only.
 ---
 
 ## 📁 Repository Structure
-## 📁 Repository Structure
 
 ```
 ola-bengaluru-product-analytics/
