@@ -68,16 +68,21 @@ ORDER BY Completion_Rate_Pct ASC;
 -- Business Question: How much money is Ola losing?
 -- ============================================================
 
-WITH avg_value AS (
-    SELECT AVG(CAST(Booking_Value AS DECIMAL(10,2))) AS Avg_Successful_Value
-    FROM ola_rides
-    WHERE Booking_Status = 'Success'
-)
 SELECT
     Booking_Status,
+
     COUNT(*)                                                                    AS Failed_Rides,
-    ROUND(COUNT(*) * (SELECT Avg_Successful_Value FROM avg_value) / 100000, 2) AS Revenue_Lost_Lakhs,
+
+    ROUND(COUNT(*) * AVG(CAST(Booking_Value AS DECIMAL(10,2))), 0)             AS Estimated_Revenue_Lost_Rs,
+
+    ROUND(COUNT(*) * (
+          SELECT AVG(CAST(Booking_Value AS DECIMAL(10,2)))
+          FROM ola_rides
+          WHERE Booking_Status = 'Success'
+    ) / 100000, 2)                                                              AS Revenue_Lost_Lakhs,
+
     ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM ola_rides), 2)              AS Share_Of_Total_Pct
+
 FROM ola_rides
 WHERE Booking_Status != 'Success'
 GROUP BY Booking_Status
@@ -88,31 +93,7 @@ ORDER BY Failed_Rides DESC;
 -- Annualised leakage: Rs.2028 Lakhs = approx Rs.20 Crore
 
 -- ============================================================
--- QUERY 4: Revenue Leakage by Vehicle Type
--- Business Question: Which vehicle type causes most revenue loss?
--- ============================================================
-
-WITH avg_value AS (
-    SELECT ROUND(AVG(CAST(Booking_Value AS DECIMAL(10,2))), 2) AS Avg_Value
-    FROM ola_rides
-    WHERE Booking_Status = 'Success'
-)
-SELECT
-    Vehicle_Type,
-    SUM(CASE WHEN Booking_Status != 'Success' THEN 1 ELSE 0 END)               AS Total_Failed_Rides,
-    ROUND(SUM(CASE WHEN Booking_Status != 'Success' THEN 1 ELSE 0 END)
-          * (SELECT Avg_Value FROM avg_value) / 100000, 2)                      AS Revenue_Lost_Lakhs,
-    ROUND(100.0 * SUM(CASE WHEN Booking_Status = 'Success'
-          THEN 1 ELSE 0 END) / COUNT(*), 2)                                     AS Completion_Rate_Pct
-FROM ola_rides
-GROUP BY Vehicle_Type
-ORDER BY Revenue_Lost_Lakhs DESC;
-
--- Finding: Prime Plus causes highest absolute leakage at Rs.25.05 Lakhs
--- All vehicle types contribute roughly equally due to uniform distribution
-
--- ============================================================
--- QUERY 5: Driver Cancellation Reason Breakdown
+-- QUERY 4: Driver Cancellation Reason Breakdown
 -- Business Question: Why are drivers cancelling?
 -- ============================================================
 
@@ -135,7 +116,7 @@ ORDER BY Cancellation_Count DESC;
 -- Drivers selecting any option to cancel quickly
 
 -- ============================================================
--- QUERY 6: Customer Cancellation Reason Breakdown
+-- QUERY 5: Customer Cancellation Reason Breakdown
 -- Business Question: Why are customers cancelling?
 -- ============================================================
 
@@ -157,7 +138,7 @@ ORDER BY Cancellation_Count DESC;
 -- Neither drivers nor customers can express true cancellation reasons
 
 -- ============================================================
--- QUERY 7: Wait Time Bucket Analysis
+-- QUERY 6: Wait Time Bucket Analysis
 -- Business Question: Does longer wait time affect ride quality?
 -- ============================================================
 
@@ -183,7 +164,7 @@ ORDER BY VTAT_Bucket;
 -- Unhappy customers cancel before rating — invisible in this data
 
 -- ============================================================
--- QUERY 8: Geographic Hotspots
+-- QUERY 7: Geographic Hotspots
 -- Business Question: Which areas have worst cancellation rates?
 -- ============================================================
 
@@ -210,7 +191,7 @@ LIMIT 10;
 -- VTAT similar to system average — confirms positioning issue not volume
 
 -- ============================================================
--- QUERY 9: Hourly Cancellation Pattern
+-- QUERY 8: Hourly Cancellation Pattern
 -- Business Question: When is the problem worst during the day?
 -- ============================================================
 
@@ -236,7 +217,7 @@ LIMIT 10;
 -- Peak hour incentives alone will not solve this
 
 -- ============================================================
--- QUERY 10: Daily Trend Analysis
+-- QUERY 9: Daily Trend Analysis
 -- Business Question: Is the problem improving or worsening?
 -- ============================================================
 
@@ -260,7 +241,7 @@ ORDER BY STR_TO_DATE(Date, '%d/%m/%Y');
 -- Jan 31 incomplete data — only 66 records, excluded from trend analysis
 
 -- ============================================================
--- QUERY 11: Incomplete Ride Reason Breakdown
+-- QUERY 10: Incomplete Ride Reason Breakdown
 -- Business Question: Why do rides that start not finish?
 -- ============================================================
 
@@ -283,35 +264,65 @@ ORDER BY Incomplete_Count DESC;
 -- These are phantom rides — never actually moved
 
 -- ============================================================
--- QUERY 12: Window Function — 7-Day Rolling Completion Rate
--- Business Question: What is the smoothed trend over January?
+-- QUERY 11: Ratings by Vehicle Type
+-- Business Question: Is ride quality differs across vehicle 
+-- categories?
 -- ============================================================
 
-WITH daily AS (
-    SELECT
-        Date,
-        COUNT(*)                                                                AS Total,
-        SUM(CASE WHEN Booking_Status = 'Success' THEN 1 ELSE 0 END)            AS Successful
-    FROM ola_rides
-    GROUP BY Date
-),
-daily_with_rate AS (
-    SELECT
-        Date,
-        Total,
-        ROUND(100.0 * Successful / Total, 2)                                    AS Daily_Completion_Pct
-    FROM daily
-)
 SELECT
-    Date,
-    Total,
-    Daily_Completion_Pct,
-    ROUND(AVG(Daily_Completion_Pct)
-          OVER (ORDER BY STR_TO_DATE(Date, '%d/%m/%Y')
-                ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 2)                  AS Rolling_7Day_Avg_Pct
-FROM daily_with_rate
-ORDER BY STR_TO_DATE(Date, '%d/%m/%Y');
+    Vehicle_Type,
 
--- Finding: 7-day rolling average confirms flat performance
--- No upward trend at any point in January
--- Problem requires structural intervention not time-based recovery
+    COUNT(*)                                                                AS Total_Successful_Rides,
+
+    ROUND(AVG(CAST(Driver_Ratings AS DECIMAL(10,2))), 2)                    AS Avg_Driver_Rating,
+
+    ROUND(MIN(CAST(Driver_Ratings AS DECIMAL(10,2))), 2)                    AS Min_Driver_Rating,
+
+    ROUND(MAX(CAST(Driver_Ratings AS DECIMAL(10,2))), 2)                    AS Max_Driver_Rating,
+
+    ROUND(AVG(CAST(Customer_Rating AS DECIMAL(10,2))), 2)                   AS Avg_Customer_Rating,
+
+    ROUND(AVG(CAST(Ride_Distance AS DECIMAL(10,2))), 2)                     AS Avg_Ride_Distance_Km,
+
+    ROUND(AVG(CAST(Booking_Value AS DECIMAL(10,2))), 2)                     AS Avg_Booking_Value_Rs
+
+FROM ola_rides
+WHERE Booking_Status = 'Success'
+GROUP BY Vehicle_Type
+ORDER BY Avg_Driver_Rating ASC;
+
+-- Finding: Ratings being exactly 4.00 across every vehicle type with min 3.00 and max 5.00 
+-- In a real Ola dataset you would expect natural variation, some vehicle types rated 3.8, others 4.3.
+-- Everywhere suggests ratings may also be synthetically generated or heavily rounded
+
+-- ============================================================
+-- QUERY 12: Payment Method Analysis
+-- Business Question: Does payment method tells anything
+-- about ride behaviour?
+-- ============================================================
+
+SELECT
+    Payment_Method,
+
+    COUNT(*)                                                                AS Total_Successful_Rides,
+
+    ROUND(100.0 * COUNT(*) /
+        (SELECT COUNT(*) FROM ola_rides
+         WHERE Booking_Status = 'Success'), 2)                              AS Share_Of_Successful_Rides_Pct,
+
+    ROUND(AVG(CAST(Booking_Value AS DECIMAL(10,2))), 2)                     AS Avg_Booking_Value_Rs,
+
+    ROUND(AVG(CAST(Ride_Distance AS DECIMAL(10,2))), 2)                     AS Avg_Ride_Distance_Km,
+
+    ROUND(AVG(CAST(Driver_Ratings AS DECIMAL(10,2))), 2)                    AS Avg_Driver_Rating
+
+FROM ola_rides
+WHERE Booking_Status = 'Success'
+  AND Payment_Method IS NOT NULL
+  AND Payment_Method != ''
+GROUP BY Payment_Method
+ORDER BY Total_Successful_Rides DESC;
+
+-- Finding: Four payment methods (Cash, UPI, Card and Wallet) has perfectly 25% each
+-- It shows the same synthetic distribution pattern.
+
